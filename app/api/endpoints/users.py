@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.db.models import User
-from app.schemas.user import UserCreate, UserResponse
-from app.core.security import get_password_hash
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.core.security import get_password_hash, verify_password
 from app.api.deps import get_current_active_user, get_current_active_admin
 
 router = APIRouter()
@@ -31,6 +31,35 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_active_user)):
+    return current_user
+
+@router.patch("/me", response_model=UserResponse)
+def update_users_me(
+    user_in: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+):
+    if user_in.email and user_in.email != current_user.email:
+        existing = db.query(User).filter(User.email == user_in.email).first()
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail="Un usuario con este email ya existe.",
+            )
+        current_user.email = user_in.email
+
+    if user_in.new_password:
+        if not user_in.current_password or not verify_password(
+            user_in.current_password, current_user.hashed_password
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="La contraseña actual es incorrecta.",
+            )
+        current_user.hashed_password = get_password_hash(user_in.new_password)
+
+    db.commit()
+    db.refresh(current_user)
     return current_user
 
 # Ejemplo de ruta protegida solo para ADMIN

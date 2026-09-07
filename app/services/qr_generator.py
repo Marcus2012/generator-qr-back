@@ -5,9 +5,11 @@ def create_qr_code(data_url: str) -> bytes:
     """
     Toma una URL (ej. la de GCP) y genera la imagen del código QR en bytes (PNG).
     """
+    # ERROR_CORRECT_H (~30% de recuperación) es imprescindible: el frontend
+    # incrusta un logo al centro del QR y con niveles bajos (L/M) queda ilegible.
     qr = qrcode.QRCode(
         version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=10,
         border=4,
     )

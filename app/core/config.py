@@ -23,8 +23,13 @@ class Settings(BaseSettings):
     # GCP CONFIG
     GCP_PROJECT_ID: str = os.getenv("GCP_PROJECT_ID", "")
     GCP_BUCKET_NAME: str = os.getenv("GCP_BUCKET_NAME", "")
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", None)
+
+    # URL pública del backend (usada para construir el enlace permanente del QR)
+    BACKEND_PUBLIC_URL: str = os.getenv("BACKEND_PUBLIC_URL", "http://localhost:8000")
     
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()

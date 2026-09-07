@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 # Registrar Routers
-app.include_router(auth.router, prefix="/api/auth", tags=["Autenticación"])
+app.include_router(auth.router, tags=["Autenticación"])
 app.include_router(users.router, prefix="/api/users", tags=["Usuarios"])
 app.include_router(qr.router, prefix="/api/qr", tags=["Códigos QR"])
 
