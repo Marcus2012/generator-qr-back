@@ -5,11 +5,14 @@ from app.core.config import settings
 import uuid
 from typing import Optional
 
-_credentials = service_account.Credentials.from_service_account_file(
-    settings.GOOGLE_APPLICATION_CREDENTIALS
-)
+_credentials = None
 
 def _get_bucket():
+    global _credentials
+    if _credentials is None:
+        _credentials = service_account.Credentials.from_service_account_file(
+            settings.GOOGLE_APPLICATION_CREDENTIALS
+        )
     client = storage.Client(project=settings.GCP_PROJECT_ID, credentials=_credentials)
     return client.bucket(settings.GCP_BUCKET_NAME)
 

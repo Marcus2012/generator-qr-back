@@ -1,0 +1,28 @@
+substitutions:
+  _SERVICE_NAME: qr-backend
+  _REGION: us-central1
+  _SERVICE_ACCOUNT: qr-backend-signer@${PROJECT_ID}.iam.gserviceaccount.com
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$SHORT_SHA', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$SHORT_SHA']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - '${_SERVICE_NAME}'
+      - --image=gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --service-account=${_SERVICE_ACCOUNT}
+      - --set-env-vars=PYTHONUNBUFFERED=1,GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-key.json
+      - --set-secrets=/secrets/gcp-key.json=GCP_SERVICE_ACCOUNT_KEY:latest,DB_USER=DB_USER:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_HOST=DB_HOST:latest,DB_PORT=DB_PORT:latest,DB_NAME=DB_NAME:latest,SECRET_KEY=SECRET_KEY:latest,ALGORITHM=ALGORITHM:latest,ACCESS_TOKEN_EXPIRE_MINUTES=ACCESS_TOKEN_EXPIRE_MINUTES:latest,GCP_PROJECT_ID=GCP_PROJECT_ID:latest,GCP_BUCKET_NAME=GCP_BUCKET_NAME:latest,BACKEND_PUBLIC_URL=BACKEND_PUBLIC_URL:latest
+
+images:
+  - 'gcr.io/$PROJECT_ID/${_SERVICE_NAME}:$SHORT_SHA'
